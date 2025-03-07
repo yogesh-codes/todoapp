@@ -3,6 +3,9 @@
 {% block title %}Home - My Website{% endblock %}
 
 {% block content %}
+  
   <h1>Welcome to TodoApp</h1>
   <p>This is a dynamic page rendered by Flask using Jinja2.</p>
+  {%include "_add_todo.html" %}
+  {%include "_show_todos.html" %}
 {% endblock %}

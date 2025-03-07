@@ -1,10 +1,13 @@
-from flask import Flask, request,url_for,render_template,jsonify
+from flask import Flask, request,url_for,render_template,jsonify,redirect,flash
 from src.core.config import FlaskAppConfig,context_variables
 from src.core import validation_logic as vl
 
 
 app:Flask = Flask(__name__)
 app.config.from_object(FlaskAppConfig)
+
+import os
+app.secret_key = os.urandom(24)
 
 from flask_sqlalchemy import SQLAlchemy
 
@@ -36,35 +39,45 @@ with app.app_context():
 
 @app.route("/add_todo",methods=["POST"])
 def add_todo():
-    content=request
+    
     try:
-        title=vl.validate_title(content)
-        new_task=TodoTable(title=title)
-        db.session.add(new_task)
+        title=request.form.get("title")
+        title=vl.validate_and_clean_title(title)
+        new_todo=TodoTable(title=title)
+        db.session.add(new_todo)
         db.session.commit()
 
 
-        return (jsonify({"status":200,"message":f"New Task added- {new_task.to_dict()}"}))
+        #return (jsonify({"status":200,"message":f"New Task added- {new_task}"}))
+        flash(f"'{title}' was added","success")
+        
     except ValueError as e:
-        pass
-        # do nothing if error
-        return jsonify({"message":"some errr"})
+        
+        #return jsonify({"message":str(e)})
+        flash(f"Error on adding todo {title}-{str(e)}","fail")
+        
+    finally:
+        return redirect(url_for("index"))
 
 @app.route("/delete_todo",methods=["POST"])
 def delete_todo():
-    content=request
     try:
+        content=request.get_data()
         todo_id=content["id"]
+        vl.validate_and_obtain_todoid(todo_id)
         todo=TodoTable.query.get(todo_id)
+        title=todo.title
         db.session.delete(todo)
         db.session.commit()
 
-        return (jsonify({"status":200,"message":f"Task deleted"}))
+    
+        flash(category="success",message=f"deleted todo- {title}")
     except ValueError as e:
-        pass
-        # do nothing if error
-        return jsonify({"message":"some errr"})
+        
+        flash(category="fail",message=f"Failed to delete- {str(e)}")
 
+    finally:
+        redirect(url_for("index"))
 @app.route("/toggle_isCompleted",methods=["POST"])
 def toggle_isCompleted():
     content=request
@@ -91,14 +104,16 @@ def context_processor():
 #per app
 @app.route('/',methods=["GET"])
 def index():
-    tasks = TodoTable.query.all()
-    return render_template('index.html', tasks=tasks)
+    todos = TodoTable.query.all()
+    return render_template('index.html', todos=todos)
 
 @app.route('/userprofile',methods=["GET"])
 def userprofile():
     tasks = TodoTable.query.all()
     return render_template('userprofile.html', userprofile={"name":"Yogesh","age":100})
 
-
 if __name__ == '__main__':
+    new_task = TodoTable(title="Buy groceries", isCompleted=False)
+    db.session.add(new_task)
+    db.session.commit()
     app.run(debug=True)

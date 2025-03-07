@@ -1,0 +1,17 @@
+<div class="box" style="border: 1px solid black; padding: 10px; width: 50%;">
+    <ul style="list-style: none; padding: 0;">
+        {% for todo in todos %}
+            <li style="margin-bottom: 5px;">
+                <strong>#{{ todo.id }}</strong> - {{ todo.title }} - 
+                <a href="{{url_for('toggle_isCompleted',)}}">
+                    {% if todo.isCompleted %}
+                        <span style="color: green; font-weight: bold;">Completed</span>
+                    {% else %}
+                        <span style="color: blue; font-weight: bold;">In Progress</span>
+                    {% endif %}
+                    </a>
+                <a href="{{ url_for('delete_todo', todo_id=todo.id) }}" style="color: red;">[Delete]</a>
+            </li>
+        {% endfor %}
+    </ul>
+</div>
