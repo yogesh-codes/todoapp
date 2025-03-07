@@ -16,6 +16,7 @@ venv/
 ENV/
 .VENV/
 .venv/
+.conda/ 
 
 # Installed dependencies
 *.egg-info/
