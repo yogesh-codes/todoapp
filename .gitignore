@@ -128,3 +128,8 @@ desktop.ini
 
 # for linux environment
 Miniconda3-latest-Linux-x86_64.sh
+
+
+# Ignore SQLite database files
+*.sqlite
+*.db
