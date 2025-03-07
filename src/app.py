@@ -1,5 +1,5 @@
 from flask import Flask, request,url_for,render_template,jsonify
-from src.core.config import FlaskAppConfig
+from src.core.config import FlaskAppConfig,context_variables
 from src.core import validation_logic as vl
 
 
@@ -9,8 +9,6 @@ app.config.from_object(FlaskAppConfig)
 from flask_sqlalchemy import SQLAlchemy
 
 #INITIALIZATIONS=================================================
-social_links={"LinkedIn":"https://www.linkedin.com/in/yogeshvperumal/",
-              "GitHub":"https://github.com/yogesh-codes"}
 
 #===Init Database
 db=SQLAlchemy()
@@ -88,7 +86,7 @@ def toggle_isCompleted():
 ## things that need to be shared to all apps
 @app.context_processor
 def context_processor():
-    return {"social_links":social_links}
+    return context_variables
 
 #per app
 @app.route('/',methods=["GET"])
