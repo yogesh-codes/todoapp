@@ -1,17 +1,22 @@
 from flask import Flask, request,url_for,render_template,jsonify
-from configs.config import FlaskAppConfig
+from src.core.config import FlaskAppConfig
 from src.core import validation_logic as vl
+
 
 app:Flask = Flask(__name__)
 app.config.from_object(FlaskAppConfig)
 
 from flask_sqlalchemy import SQLAlchemy
 
-#Init Database--------------------------------------------------
+#INITIALIZATIONS=================================================
+social_links={"LinkedIn":"https://www.linkedin.com/in/yogeshvperumal/",
+              "GitHub":"https://github.com/yogesh-codes"}
+
+#===Init Database
 db=SQLAlchemy()
 db.init_app(app=app)
 
-#Declare Table--------------------------------------------------
+#===Declare Table
 class TodoTable(db.Model):
     # init table name and type of columns
     __tablename__="todos"
@@ -24,11 +29,13 @@ class User(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     name = db.Column(db.String(80), nullable=False)
 
-@app.before_first_request
-def create_tables():
+#Create all table instance
+with app.app_context():
     db.create_all()
 
-#----------APIS these will be called by vanilla JS---------------
+
+#APIS these will be called by frontend (static JS)===================
+
 @app.route("/add_todo",methods=["POST"])
 def add_todo():
     content=request
@@ -77,11 +84,22 @@ def toggle_isCompleted():
         # do nothing if error
         return jsonify({"message":"some errr"})
 
-#---------------------------------------------------------------------------
-@app.route('/')
+#PAGE RENDERERS-----------------------------------------
+## things that need to be shared to all apps
+@app.context_processor
+def context_processor():
+    return {"social_links":social_links}
+
+#per app
+@app.route('/',methods=["GET"])
 def index():
     tasks = TodoTable.query.all()
     return render_template('index.html', tasks=tasks)
+
+@app.route('/userprofile',methods=["GET"])
+def userprofile():
+    tasks = TodoTable.query.all()
+    return render_template('userprofile.html', userprofile={"name":"Yogesh","age":100})
 
 
 if __name__ == '__main__':
